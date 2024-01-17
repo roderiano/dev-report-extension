@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var stopReportButton = document.getElementById("stopReport");
     stopReportButton.addEventListener('click', function () {
-        showStartScreen();
+        stopRecord();
     });
 
 });
@@ -19,26 +19,25 @@ function startRecord() {
         chrome.storage.sync.set({'tabId': tabId}, function() {
             console.log('Listening to tab ' + tabId);
           });
-        chrome.tabs.create({ url: `../html/popup.html?screen=capture&tab=${tabId}` });
     });
+    showCaptureScreen();
+}
+
+function stopRecord() {
+    chrome.storage.sync.set({'tabId': null}, function() {
+        console.log('Stop the listening...');
+    });
+    showStartScreen();
 }
 
 function routeScreen() {
-    const extensionUrl = window.location.toString();
-    const urlObject = new URL(extensionUrl);
-    const params = new URLSearchParams(urlObject.search);
-    const screenRoute = params.get('screen') ?? 'start';
-
-    if(screenRoute == 'start')
-    {
-        showStartScreen();
-    }
-    else if(screenRoute == 'capture')
-    {
-        showCaptureScreen();
-    }
-        
-    console.log(`Screen: `+ screenRoute);
+    chrome.storage.sync.get(['tabId'], function(items) {
+        if(!items.tabId) {
+            showStartScreen();
+        } else {
+            showCaptureScreen();
+        }
+    });
 }
 
 function showCaptureScreen() {
