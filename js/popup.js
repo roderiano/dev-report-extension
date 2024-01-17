@@ -14,11 +14,17 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function startRecord() {
-    chrome.tabs.create({url: '../html/popup.html?screen=capture'}) 
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        const tabId = tabs[0].id;
+        chrome.storage.sync.set({'tabId': tabId}, function() {
+            console.log('Listening to tab ' + tabId);
+          });
+        chrome.tabs.create({ url: `../html/popup.html?screen=capture&tab=${tabId}` });
+    });
 }
 
 function routeScreen() {
-    const extensionUrl =window.location.toString();
+    const extensionUrl = window.location.toString();
     const urlObject = new URL(extensionUrl);
     const params = new URLSearchParams(urlObject.search);
     const screenRoute = params.get('screen') ?? 'start';
