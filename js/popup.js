@@ -18,7 +18,7 @@ function startRecord() {
         const tabId = tabs[0].id;
         chrome.storage.sync.set({'tabId': tabId}, function() {
             console.log('Listening to tab ' + tabId);
-          });
+        });
     });
     showCaptureScreen();
 }
