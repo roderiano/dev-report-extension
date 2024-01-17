@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+
+  "name": "BugReport",
+  "description": "A description of the Extension",
+  "version": "0.0.0",
+
+  "background": {
+    "service_worker": "./js/background.js"
+  },
+
+  "action": {
+    "default_popup": "./html/popup.html"
+  },
+
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["./js/popup.js"]
+    }
+  ]
+}

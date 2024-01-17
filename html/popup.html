@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Title of the extension</title>
+  <script src="../js/popup.js"></script>
+  <link rel="stylesheet" type="text/css" href="../css/main.css">
+  <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css">
+  <script src="../js/jquery-1.10.2.min.js"></script>
+  <script src="../js/bootstrap.min.js"></script>
+  <style>
+    body {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container" id="start-screen">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <h3>BugReport</h3>
+        <button id="startReport" class="btn btn-primary">Start Report</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="capture-screen">
+    <div class="row d-flex justify-content-center">
+      <div class="col-md-12 text-center">
+        <h3>BugReport</h3>
+        <div class="spinner-grow text-secondary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Capturing chrome data...</p>
+        <button id="stopReport" class="btn btn-secondary">Stop Report</button>
+      </div>
+    </div>
+  </div>
+  
+</body>
+
+</html>
