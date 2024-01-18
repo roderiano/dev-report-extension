@@ -1,75 +1,103 @@
-chrome.webRequest.onCompleted.addListener(
-  logCompletedRequest,
-  { urls: ["<all_urls>"] },
-  ["responseHeaders", "extraHeaders"]
-);
+// Request representation
+var requests = [];
 
+class RequestObject {
+  constructor() {
+    this.requestType = null;
+    this.requestId = null;
+    this.url = null;
+    this.method = null;
+    this.responseHeaders = null;
+    this.requestHeaders = null;
+    this.statusCode = null;
+    this.responseBody = null;
+    this.requestBody = null;
+  }
+}
+
+// Listeners
 chrome.webRequest.onBeforeRequest.addListener(
-  logCompletedRequest,
+  registerRequestObject,
   { urls: ["<all_urls>"] },
   ["extraHeaders", "requestBody"]
 );
 
 chrome.webRequest.onBeforeSendHeaders.addListener(
-  logCompletedRequest,
+  registerRequestHeaders,
   { urls: ["<all_urls>"] },
   ["requestHeaders"]
 );
 
-async function logCompletedRequest(details) {
-  chrome.storage.local.get(['tabId'], async function(items) {
-    if (details.tabId == items.tabId && details.type === "xmlhttprequest") {
 
-      var requestId = details.requestId;
-      if (!capturedRequests[requestId]) {
-        capturedRequests[requestId] = {
-          request: null,
-          response: null
-        };
-      }
+chrome.webRequest.onCompleted.addListener(
+  registerRequestResponse,
+  { urls: ["<all_urls>"] },
+  ["responseHeaders", "extraHeaders"]
+);
 
-      if (details.statusCode) {
-        capturedRequests[requestId].response = {
-          url: details.url,
-          method: details.method,
-          responseHeaders: details.responseHeaders,
-          statusCode: details.statusCode,
-          responseBody: null
-        };
-        
-        console.log(capturedRequests[requestId].request.requestHeaders);
-        await fetch(details.url, {
-          method: details.method, 
-          headers: formatHeaders(capturedRequests[requestId].request.requestHeaders),
-          body: capturedRequests[requestId].request.requestBody
-        })
-        .then(response => response.text())
-        .then(responseText => {
-          console.log(1);
-          capturedRequests[requestId].response.responseBody = responseText;
-          console.log(2);
-        })
-
-      } 
-      else if (!details.requestHeaders) {
-        capturedRequests[requestId].request = {
-          url: details.url,
-          method: details.method,
-          requestBody: details.requestBody,
-        };
-      } 
-      else if(details.requestHeaders) {
-        capturedRequests[requestId].request.requestHeaders = details.requestHeaders;
-      }
-      
-      chrome.storage.local.set({'tabRequests': capturedRequests}, function() {
-        console.log('Saved requests from tab ');
-      });
-    }
-  });
+// Listeners callbacks
+async function registerRequestObject(details) {
+  var tabId = details.tabId;
+  if(!await isCurrentTabId(tabId))
+    return;
   
+  console.log(`onBeforeRequest callback received from tab ` + tabId);
+  var request = new RequestObject();
+  request.url = details.url;
+  request.method = details.method;
+  request.requestType = details.type;
+  request.requestId = details.requestId;
+  request.requestBody = details.requestBody;
+  requests.push(request);
 }
 
+async function registerRequestHeaders(details) {
+  var tabId = details.tabId;
+  if(!await isCurrentTabId(tabId))
+    return;
+  
+  console.log(`onBeforeSendHeaders callback received from tab ` + tabId);
+  var request = getRequestByRequestId(details.requestId);
+  request.requestHeaders = details.requestHeaders;
+}
+
+async function registerRequestResponse(details) {
+  var tabId = details.tabId;
+  if(!await isCurrentTabId(tabId))
+    return;
+  
+  console.log(`onCompleted callback received from tab ` + tabId);
+  var request = getRequestByRequestId(details.requestId);
+  request.statusCode = details.statusCode;
+  request.responseHeaders = details.responseHeaders;
+  
+  await fetch(details.url, {
+    method: details.method, 
+    headers: formatHeaders(request.requestHeaders),
+    body: request.requestBody
+  })
+  .then(response => response.text())
+  .then(responseText => {
+    request.responseBody = responseText;
+  });
+}
+
+// Stored tabId checker
+function checkLocalStorageChanges() {
+  if(isCurrentTabId(storedTabId))
+    return;
+
+  chrome.storage.local.get(['tabId'], function (item) {
+    storedTabId = item.tabId;
+  });
+  
+  requests = [];
+}
+let storedTabId = null;
+setInterval(checkLocalStorageChanges, 1000);
+
+
+// Utils
 function formatHeaders(headers) {
   const formattedHeaders = {};
   for (const header of headers) {
@@ -83,4 +111,15 @@ function formatHeaders(headers) {
   return formattedHeaders;
 }
 
-var capturedRequests = {};
+function isCurrentTabId(tabId) {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['tabId'], function (items) {
+      const storedTabId = items.tabId;
+      resolve(Number(tabId) === Number(storedTabId));
+    });
+  });
+}
+
+function getRequestByRequestId(requestId) {
+  return requests.find(request => request.requestId === requestId);
+}
