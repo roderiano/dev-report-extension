@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function startRecord() {
+    chrome.storage.local.set({'requests': []}, function() {
+        console.log("Requests deleted from memory");
+    });
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         const tabId = tabs[0].id;
         chrome.storage.local.set({'tabId': tabId}, function() {
@@ -26,22 +29,20 @@ function startRecord() {
 }
 
 function stopRecord() {
+    chrome.storage.local.get('requests', function(result) {
+        const blob = new Blob([result.requests], { type: 'application/json' });
+        const blobURL = URL.createObjectURL(blob);
+        const downloadLink = document.createElement('a');
+        downloadLink.href = blobURL;
+        downloadLink.download = 'tabRequests.json';
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    });
+    
     chrome.storage.local.set({'tabId': null}, function() {
         console.log('Stop the listening...');
     });
-
-    // chrome.storage.local.get(['tabRequests'], function(items) {
-    //     console.log(items);
-    //     const jsonData = JSON.stringify(items.tabRequests, null, 2); 
-    //     const blob = new Blob([jsonData], { type: 'application/json' });
-    //     const blobURL = URL.createObjectURL(blob);
-    //     const downloadLink = document.createElement('a');
-    //     downloadLink.href = blobURL;
-    //     downloadLink.download = 'tabRequests.json';
-    //     document.body.appendChild(downloadLink);
-    //     downloadLink.click();
-    //     document.body.removeChild(downloadLink);
-    // });
 
     routeScreen();
 }

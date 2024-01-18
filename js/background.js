@@ -56,6 +56,10 @@ async function registerRequestHeaders(details) {
 
   console.log(`Callback onBeforeSendHeaders received from tab ` + tabId);
   var request = getRequestByRequestId(details.requestId);
+
+  if(request === undefined)
+    request = registerRequestObject(details);
+  
   request.requestHeaders = details.requestHeaders;
 }
 
@@ -65,6 +69,10 @@ async function registerRequestResponse(details) {
 
   console.log(`Callback onCompleted received from tab ` + tabId);
   var request = getRequestByRequestId(details.requestId);
+
+  if(request === undefined)
+    request = registerRequestObject(details);
+
   request.statusCode = details.statusCode;
   request.responseHeaders = details.responseHeaders;
 
@@ -73,9 +81,14 @@ async function registerRequestResponse(details) {
     headers: formatHeaders(request.requestHeaders),
     body: request.requestBody
   })
-  .then(response => response.text())
-  .then(responseText => {
-    request.responseBody = responseText;
+  .then(async response => {
+    request.responseBody = request.statusCode < 400 && response.status >= 400 ? "" : await response.text(); 
+    saveRequests();
+  })
+  .catch(function (error) {
+    console.log(
+      "There has been a problem with your fetch operation: " + error.message,
+    );
   });
 }
 
@@ -116,4 +129,10 @@ function isCurrentTabId(tabId) {
 
 function getRequestByRequestId(requestId) {
   return requests.find(request => request.requestId === requestId);
+}
+
+function saveRequests() {
+  chrome.storage.local.set({'requests': JSON.stringify(requests)}, function() {
+    console.log("Request saved to memory:", requests);
+  });
 }
