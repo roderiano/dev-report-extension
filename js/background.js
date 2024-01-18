@@ -46,7 +46,13 @@ async function registerRequestObject(details) {
   request.method = details.method;
   request.requestType = details.type;
   request.requestId = details.requestId;
-  request.requestBody = details.requestBody;
+
+  if(details.requestBody && details.requestBody.raw)
+    var postedString = decodeURIComponent(
+      String.fromCharCode.apply(null, new Uint8Array(details.requestBody.raw[0].bytes))
+    );
+    request.requestBody = postedString;
+
   requests.push(request);
 }
 
@@ -56,9 +62,6 @@ async function registerRequestHeaders(details) {
 
   console.log(`Callback onBeforeSendHeaders received from tab ` + tabId);
   var request = getRequestByRequestId(details.requestId);
-
-  if(request === undefined)
-    request = registerRequestObject(details);
   
   request.requestHeaders = details.requestHeaders;
 }
@@ -69,9 +72,6 @@ async function registerRequestResponse(details) {
 
   console.log(`Callback onCompleted received from tab ` + tabId);
   var request = getRequestByRequestId(details.requestId);
-
-  if(request === undefined)
-    request = registerRequestObject(details);
 
   request.statusCode = details.statusCode;
   request.responseHeaders = details.responseHeaders;
@@ -132,7 +132,7 @@ function getRequestByRequestId(requestId) {
 }
 
 function saveRequests() {
-  chrome.storage.local.set({'requests': JSON.stringify(requests)}, function() {
+  chrome.storage.local.set({'requests': JSON.stringify(requests, null, 2)}, function() {
     console.log("Request saved to memory:", requests);
   });
 }
