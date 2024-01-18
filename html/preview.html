@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Title of the extension</title>
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css">
+    <script src="../js/jquery-1.10.2.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <h1 class="mt-3">Request Details</h1>
+  <div id="accordion">
+  </div>
+</div>
+
+<script>
+  var requestData = [
+    {
+      "requestType": "xmlhttprequest",
+      "requestId": "24671",
+      "url": "https://api.nexamind.app/authentication/",
+      "method": "POST",
+      "responseHeaders": [
+        // ... other headers
+      ],
+      "requestHeaders": [
+        // ... other headers
+      ],
+      "statusCode": 200,
+      "responseBody": "{\"token\":\"...\"}",
+      "requestBody": "{\"username\":\"gsilveira\",\"password\":\"gab123PRO+\"}"
+    }
+  ];
+
+  var accordionContainer = document.getElementById('accordion');
+
+  requestData.forEach(function(request, index) {
+    var card = document.createElement('div');
+    card.className = 'card';
+
+    var cardHeader = document.createElement('div');
+    cardHeader.className = 'card-header';
+    cardHeader.id = `heading${index + 1}`;
+
+    var btnClass = index === 0 ? 'btn btn-link' : 'btn btn-link collapsed';
+    var statusCodeClass = request.statusCode >= 400 ? 'bg-danger' : 'bg-primary';
+
+    cardHeader.innerHTML = `
+        <div class="d-flex flex-row align-items-center justify-content-between">
+            <div>
+                <span class="badge rounded-pill ${statusCodeClass}">
+                    ${request.method} (${request.statusCode})
+                </span>
+                <button class="${btnClass}" data-bs-toggle="collapse" data-bs-target="#collapse-${request.requestId}" aria-expanded="${index === 0}" aria-controls="collapse-${request.requestId}">
+                    ${request.url}
+                </button>
+            </div>
+
+            <span class="badge bg-secondary">
+                ${request.requestType.replace("request", "").toUpperCase()} - ${request.requestId}
+            </span>
+        </div>
+    `;
+
+    var collapseDiv = document.createElement('div');
+    collapseDiv.id = `collapse-${request.requestId}`;
+    collapseDiv.className = 'collapse';
+    collapseDiv.setAttribute('aria-labelledby', `heading${index + 1}`);
+    collapseDiv.setAttribute('data-bs-parent', '#accordion');
+
+    var cardBody = document.createElement('div');
+    cardBody.className = 'card-body';
+
+    cardBody.innerHTML = `
+        <strong>Method:</strong> ${request.method}<br>
+        <strong>Request ID:</strong> ${request.requestId}<br>
+        <strong>Status Code:</strong> ${request.statusCode}<br>
+        <strong>Request Type:</strong> ${request.requestType}<br>
+
+        <strong>Request Body:</strong><br>
+        <pre class="response-body">${request.requestBody}</pre>
+
+        <strong>Response Body:</strong><br>
+        <pre class="response-body">${request.responseBody}</pre>
+    `;
+
+    collapseDiv.appendChild(cardBody);
+    card.appendChild(cardHeader);
+    card.appendChild(collapseDiv);
+
+    accordionContainer.appendChild(card);
+  });
+</script>
+
+</body>
+</html>
