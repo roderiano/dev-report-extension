@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
 
-  "name": "BugReport",
-  "description": "A description of the Extension",
+  "name": "DevReport",
+  "description": "DevReport is an extension for Google Chrome that stores data transmitted in a specified tab to generate an execution report.",
   "version": "0.0.0",
 
   "background": {
@@ -28,5 +28,12 @@
     }
   ],
 
-  "host_permissions": ["http://*/*", "https://*/*"]
+  "host_permissions": ["http://*/*", "https://*/*"],
+
+  "icons": {
+    "16": "./images/icon.png",
+    "32": "./images/icon.png",
+    "48": "./images/icon.png",
+    "128": "./images/icon.png"
+  }
 }

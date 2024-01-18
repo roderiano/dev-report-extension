@@ -47,11 +47,11 @@ async function registerRequestObject(details) {
   request.requestType = details.type;
   request.requestId = details.requestId;
 
-  if(details.requestBody && details.requestBody.raw)
+  if (details.requestBody && details.requestBody.raw)
     var postedString = decodeURIComponent(
       String.fromCharCode.apply(null, new Uint8Array(details.requestBody.raw[0].bytes))
     );
-    request.requestBody = postedString;
+  request.requestBody = postedString;
 
   requests.push(request);
 }
@@ -62,7 +62,7 @@ async function registerRequestHeaders(details) {
 
   console.log(`Callback onBeforeSendHeaders received from tab ` + tabId);
   var request = getRequestByRequestId(details.requestId);
-  
+
   request.requestHeaders = details.requestHeaders;
 }
 
@@ -81,15 +81,15 @@ async function registerRequestResponse(details) {
     headers: formatHeaders(request.requestHeaders),
     body: request.requestBody
   })
-  .then(async response => {
-    request.responseBody = request.statusCode < 400 && response.status >= 400 ? "" : await response.text(); 
-    saveRequests();
-  })
-  .catch(function (error) {
-    console.log(
-      "There has been a problem with your fetch operation: " + error.message,
-    );
-  });
+    .then(async response => {
+      request.responseBody = request.statusCode < 400 && response.status >= 400 ? "" : await response.text();
+      saveRequests();
+    })
+    .catch(function (error) {
+      console.log(
+        "There has been a problem with your fetch operation: " + error.message,
+      );
+    });
 }
 
 // Stored tabId checker
@@ -132,7 +132,7 @@ function getRequestByRequestId(requestId) {
 }
 
 function saveRequests() {
-  chrome.storage.local.set({'requests': JSON.stringify(requests, null, 2)}, function() {
+  chrome.storage.local.set({ 'requests': JSON.stringify(requests, null, 2) }, function () {
     console.log("Request saved to memory:", requests);
   });
 }
