@@ -11,9 +11,7 @@
   },
   "permissions": [
     "storage",
-    "activeTab",
     "webRequest",
-    "unlimitedStorage",
     "downloads"
   ],
   "content_scripts": [
