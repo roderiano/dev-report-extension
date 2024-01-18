@@ -1,18 +1,14 @@
 {
   "manifest_version": 3,
-
   "name": "DevReport",
   "description": "DevReport is an extension for Google Chrome that stores data transmitted in a specified tab to generate an execution report.",
-  "version": "0.0.0",
-
+  "version": "1.0.0",
   "background": {
     "service_worker": "./js/background.js"
   },
-
   "action": {
     "default_popup": "./html/popup.html"
   },
-
   "permissions": [
     "storage",
     "activeTab",
@@ -20,16 +16,21 @@
     "unlimitedStorage",
     "downloads"
   ],
-
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*"],
-      "js": ["./js/popup.js"]
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "./js/popup.js"
+      ]
     }
   ],
-
-  "host_permissions": ["http://*/*", "https://*/*"],
-
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
   "icons": {
     "16": "./images/icon.png",
     "32": "./images/icon.png",
