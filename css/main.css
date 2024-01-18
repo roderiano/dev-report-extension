@@ -1,7 +1,7 @@
 /**
  * Custom CSS may be added here.
  */
- body {
+body {
   min-width: 357px;
   min-height: 250px;
   overflow-x: hidden;
@@ -24,12 +24,12 @@
   margin-bottom: 10px;
 }
 
-form.settings label{
- width: 100px;
- display: block;
- float: left;
+form.settings label {
+  width: 100px;
+  display: block;
+  float: left;
 }
 
-form.settings .form-item{
+form.settings .form-item {
   clear: both;
 }
