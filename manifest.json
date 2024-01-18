@@ -17,7 +17,8 @@
     "storage",
     "activeTab",
     "webRequest",
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "downloads"
   ],
 
   "content_scripts": [

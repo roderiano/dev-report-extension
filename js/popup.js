@@ -28,24 +28,62 @@ function startRecord() {
     routeScreen();
 }
 
-function stopRecord() {
-    chrome.storage.local.get('requests', function(result) {
-        const blob = new Blob([result.requests], { type: 'application/json' });
-        const blobURL = URL.createObjectURL(blob);
-        const downloadLink = document.createElement('a');
-        downloadLink.href = blobURL;
-        downloadLink.download = 'tabRequests.json';
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
+function loadJSZip(callback) {
+    const script = document.createElement('script');
+    script.src = chrome.runtime.getURL('./js/jszip.min.js');
+    script.onload = callback;
+    document.head.appendChild(script);
+  }
+  
+  function getFileContent(fileURL) {
+    return fetch(fileURL).then(response => response.text());
+  }
+  
+  function stopRecord() {
+    // Load JSZip dynamically
+    loadJSZip(function () {
+      chrome.storage.local.get('requests', async function (result) {
+        const jsonData = result.requests;
+  
+        // Fetch content of preview.html
+        const previewHtmlContent = await getFileContent(chrome.runtime.getURL('./html/preview.html'));
+  
+        // Create a zip file containing both preview.html and tabRequests.json
+        const zip = new JSZip();
+  
+        // Add preview.html to the zip
+        zip.file('preview.html', previewHtmlContent);
+  
+        // Add tabRequests.json to the zip
+        zip.file('tabRequests.js', "var data = " + jsonData);
+  
+        // Generate the zip file
+        zip.generateAsync({ type: 'blob' }).then(function (content) {
+          // Trigger download of the zip file
+          chrome.downloads.download({
+            url: URL.createObjectURL(content),
+            filename: 'extension_data.zip',
+            saveAs: false,
+            conflictAction: 'uniquify',
+            method: 'GET'
+          }, function (downloadId) {
+            if (chrome.runtime.lastError) {
+              console.error('Error downloading zip file:', chrome.runtime.lastError);
+            } else {
+              console.log('Zip file saved locally.');
+            }
+          });
+        });
+  
+        chrome.storage.local.set({ 'tabId': null }, function () {
+          console.log('Stop the listening...');
+        });
+  
+        routeScreen();
+      });
     });
-    
-    chrome.storage.local.set({'tabId': null}, function() {
-        console.log('Stop the listening...');
-    });
-
-    routeScreen();
-}
+  }
+  
 
 function routeScreen() {
     chrome.storage.local.get(['tabId'], function(items) {
